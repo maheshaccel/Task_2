@@ -140,12 +140,3 @@ const getUserDetails = (0, CatchAsync_1.default)((req, res, next) => __awaiter(v
     });
 }));
 exports.getUserDetails = getUserDetails;
-// create note
-const CreateNotes = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    // @ts-ignores
-    const userId = req.user;
-    const user = yield UserModel_1.default.findById(userId);
-    res.status(200).json({
-        user,
-    });
-}));

@@ -174,20 +174,6 @@ const getUserDetails = CatchAsync(
   }
 );
 
-// create note
-const CreateNotes = CatchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    // @ts-ignores
-    const userId = req.user;
-
-    const user = await UserModel.findById(userId);
-
-    res.status(200).json({
-      user,
-    });
-  }
-);
-
 export {
   getUserDetails,
   CreateUser,

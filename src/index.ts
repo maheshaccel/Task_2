@@ -3,7 +3,6 @@ import cors from 'cors'
 import mainRouter from './routes/index'
 import ConnectDB from './config/db'
 import { errors } from './utils/error'
-import path from 'path'
 
 const app = express()
 
