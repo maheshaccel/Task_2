@@ -28,6 +28,10 @@ const UserModel = new mongoose_1.default.Schema({
         type: String,
         default: "active",
         enum: ['active', 'inactive']
+    },
+    avtar: {
+        type: String,
+        default: null
     }
 });
 module.exports = mongoose_1.default.model('user', UserModel);

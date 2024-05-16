@@ -19,19 +19,37 @@ const Service_1 = require("../utils/Service");
 const Errorhandler_1 = require("../utils/Errorhandler");
 const mongoose_1 = __importDefault(require("mongoose"));
 const PostModal_1 = __importDefault(require("../model/PostModal"));
+const fs_1 = __importDefault(require("fs"));
 // create User
 const CreateUser = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = req.body;
+    const avatar = req.file;
+    // @ts-ignore
+    const folderPath = req.filePath;
+    if (!name || !email || !password) {
+        (0, Service_1.RemoveFolder)(folderPath);
+        return next((0, Errorhandler_1.ApiError)(300, "please fill all the details"));
+    }
     const exist = yield UserModel_1.default.findOne({ email: email });
     if (exist) {
+        (0, Service_1.RemoveFolder)(folderPath);
         return next((0, Errorhandler_1.ApiError)(202, "User is already exist"));
     }
     const user = yield UserModel_1.default.create({
         name,
         email,
         password,
+        avtar: avatar === null || avatar === void 0 ? void 0 : avatar.filename,
     });
-    // create token
+    if (fs_1.default.existsSync(folderPath)) {
+        fs_1.default.rename(folderPath, `public/user/${user._id}`, (err) => {
+            if (err) {
+                console.error("Error renaming folder:", err);
+                return;
+            }
+            console.log("Folder renamed successfully");
+        });
+    }
     const token = (0, Service_1.CreateToken)({ id: user._id, name: user.name });
     res.setHeader("Authorization", `Bearer ${token}`);
     res.status(200).json({
@@ -44,9 +62,21 @@ exports.CreateUser = CreateUser;
 const UpdateUser = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignores
     const userId = req.user;
-    const user = yield UserModel_1.default.findOneAndUpdate({ _id: userId }, Object.assign({}, req.body), { new: true });
+    let deletfileName = null;
+    const existUser = yield UserModel_1.default.findOne({ _id: userId });
+    if (!existUser)
+        return next((0, Errorhandler_1.ApiError)(404, "User not found"));
+    let avtar = existUser.avtar;
+    if (req.file) {
+        deletfileName = existUser.avtar;
+        avtar = req.file.filename;
+    }
+    const user = yield UserModel_1.default.findOneAndUpdate({ _id: userId }, Object.assign(Object.assign({}, req.body), { avtar: avtar }), { new: true });
     if (!user) {
         return next((0, Errorhandler_1.ApiError)(404, "User is not exist"));
+    }
+    if (deletfileName) {
+        fs_1.default.unlinkSync(`public/user/${user._id}/${deletfileName}`);
     }
     res.status(200).json({
         message: "User is Udpated Successfully",
@@ -58,6 +88,7 @@ exports.UpdateUser = UpdateUser;
 const DeleteUser = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignores
     const userId = req.user;
+    const folderPath = `public/user/${userId}`;
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     const user = yield UserModel_1.default.findOneAndDelete({ _id: userId });
@@ -66,6 +97,7 @@ const DeleteUser = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 
         return next((0, Errorhandler_1.ApiError)(404, "User is not exist"));
     }
     yield PostModal_1.default.deleteMany({ user: userId });
+    (0, Service_1.RemoveFolder)(folderPath);
     session.commitTransaction();
     res.status(200).json({
         message: "User is Deleted Successfully",
@@ -75,6 +107,7 @@ exports.DeleteUser = DeleteUser;
 const DeleteUserByID = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignores
     const userId = req.params.id;
+    const folderPath = `public/user/${userId}`;
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     const user = yield UserModel_1.default.findOneAndDelete({ _id: userId });
@@ -82,6 +115,7 @@ const DeleteUserByID = (0, CatchAsync_1.default)((req, res, next) => __awaiter(v
         yield session.abortTransaction();
         return next((0, Errorhandler_1.ApiError)(404, "User is not exist"));
     }
+    (0, Service_1.RemoveFolder)(folderPath);
     yield PostModal_1.default.deleteMany({ user: userId });
     res.status(200).json({
         message: "User is Deleted Successfully",
@@ -106,3 +140,12 @@ const getUserDetails = (0, CatchAsync_1.default)((req, res, next) => __awaiter(v
     });
 }));
 exports.getUserDetails = getUserDetails;
+// create note
+const CreateNotes = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    // @ts-ignores
+    const userId = req.user;
+    const user = yield UserModel_1.default.findById(userId);
+    res.status(200).json({
+        user,
+    });
+}));

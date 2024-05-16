@@ -26,6 +26,10 @@ const UserModel = new mongoose.Schema({
     type : String,
     default : "active",
     enum : ['active', 'inactive']
+  },
+  avtar : {
+    type: String,
+    default : null
   }
 });
 

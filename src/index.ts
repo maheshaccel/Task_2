@@ -9,7 +9,7 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
-app.use(express.static('public/files'))
+app.use(express.static('public'))
 app.use('/api/v1' , mainRouter)
 
 

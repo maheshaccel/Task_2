@@ -126,11 +126,6 @@ exports.DeletePost = DeletePost;
 // getall Post -> don't show the inactive user's post --> search functionality --> limit 10 -> pagination -> filter by category
 const GetAllPost = (0, CatchAsync_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const filter = req.query;
-    const keyword = req.query.search
-        ? {
-            $or: [{ title: { $regex: new RegExp("s", "i") } }],
-        }
-        : {};
     const limit = 10;
     const feature = new GetAllPostFeature_1.ApiFeature(PostModal_1.default, filter)
         .search()

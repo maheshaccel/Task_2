@@ -139,11 +139,6 @@ const DeletePost = CatchAsync(async (req, res, next) => {
 // getall Post -> don't show the inactive user's post --> search functionality --> limit 10 -> pagination -> filter by category
 const GetAllPost = CatchAsync(async (req, res, next) => {
   const filter = req.query;
-  const keyword = req.query.search
-    ? {
-        $or: [{ title: { $regex: new RegExp("s", "i") } }],
-      }
-    : {};
   const limit = 10;
   const feature = new ApiFeature(PostModal, filter)
     .search()
